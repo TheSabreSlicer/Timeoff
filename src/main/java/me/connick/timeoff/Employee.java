@@ -4,27 +4,29 @@ import org.springframework.data.annotation.Id;
 
 public class Employee {
 
-    @Id
-    private String id;
-    private int availableHours;
+  @Id
+  private String employeeId; // internal ID for mongo use
+  private int hours;
 
-    public Employee(int hours) {
-        this.availableHours = hours;
-    }
+  public Employee() {}
 
-    public String getId() {
-        return id;
-    }
+  public Employee(int hours) {
+    this.hours = hours;
+  }
 
-    public int getHours() {
-        return availableHours;
-    }
+  public String getId() {
+    return employeeId;
+  }
 
-    public void setHours(int newHours) {
-        this.availableHours = newHours;
-    }
+  public int getHours() {
+    return hours;
+  }
 
-    public void subtractHours(int amount) {
-        this.availableHours -= amount;
-    }
+  public void setHours(int newHours) {
+    this.hours = newHours;
+  }
+
+  public void subtractHours(int amount) {
+    this.hours -= amount;
+  }
 }

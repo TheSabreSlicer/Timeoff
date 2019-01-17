@@ -1,0 +1,2 @@
+/timeoff/employee - POST [hours, default = 0], GET [id], DELETE [id]
+/timeoff/requests - POST (id, date, hours), GET [id]
