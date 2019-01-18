@@ -31,7 +31,7 @@ POST <base-url>/timeoff/employees/
 description: creates a new employee in the database\
 required parameters: none\
 optional parameters: hours\
-notes: hours must be 0 or greater
+notes: hours must be 0 or greater, default 0
 
 ```
 PUT <base-url>/timeoff/employees/{id}
@@ -58,17 +58,17 @@ optional parameters: none\
 notes: none
 
 ```
-DELETE <base-url>/timeoff/employees/
+DELETE <base-url>/timeoff/employees/{id}
 ```
-description: deletes all employees in the database\
+description: deletes an employee from the database\
 required parameters: none\
 optional parameters: none\
 notes: none
 
 ```
-DELETE <base-url>/timeoff/employees/{id}
+DELETE <base-url>/timeoff/employees/
 ```
-description: deletes an employee from the database\
+description: deletes all employees in the database\
 required parameters: none\
 optional parameters: none\
 notes: none
