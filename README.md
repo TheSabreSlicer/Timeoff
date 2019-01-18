@@ -1,7 +1,7 @@
 # Timeoff
-#### A Spring Boot application that manages PTO requests for employees through a REST API.
+### A Spring Boot application that manages PTO requests for employees through a REST API.
 
-#### Requirements:
+### Requirements:
 A running local installation of mongodb is required.
 
 To run tests (macOS):
@@ -21,9 +21,9 @@ To run (Windows):
 gradlew.bat bootRun
 ```
 
-#### The API provides two endpoints:
+### The API provides two endpoints:
 
-##### Employees Endpoint
+#### Employees Endpoint
 
 ```
 POST <base-url>/timeoff/employees/
@@ -74,7 +74,7 @@ optional parameters: none\
 notes: none
 
 
-##### Requests Endpoint
+#### Requests Endpoint
 
 ```
 POST <base-url>/timeoff/requests/
