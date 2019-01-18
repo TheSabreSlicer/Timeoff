@@ -38,15 +38,21 @@ public class Employee {
 
   // takes a number of hours, and a date, and returns true if successful or false otherwise
   public boolean timeoffRequest(int numHours, int year, int month, int day) throws DateTimeException{
-    if(numHours > this.hours){
+    // make sure the employee has enough hours and that the requested hours are between 1-24
+    if(numHours > this.hours | numHours < 1 | numHours > 24){
       return false;
     }
+    // if the date is in the past, return false, this will also verify the passed date is valid
+    if(LocalDate.now().isAfter(LocalDate.of(year, month, day))){
+      return false;
+    }
+    // convert to string
     String date = LocalDate.of(year, month, day).toString();
     this.hours -= numHours;
     // putIfAbsent returns null if key isn't already mapped, otherwise returns value already stored
     if(this.requests.putIfAbsent(date, numHours) != null){
-      int check = this.requests.get(date);
-      this.requests.put(date, check+numHours);
+      int stored = this.requests.get(date);
+      this.requests.put(date, stored+numHours);
     }
     return true;
   }

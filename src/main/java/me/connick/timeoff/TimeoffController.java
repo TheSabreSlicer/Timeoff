@@ -26,13 +26,18 @@ public class TimeoffController {
 
 	// handles POST for creating new employees
 	@RequestMapping(value = "/timeoff/employees/", method=RequestMethod.POST, produces={"application/json"})
-	public ResponseEntity<Employee> employeePost(@RequestParam(value="hours", defaultValue="0") int hours, HttpServletRequest request) throws URISyntaxException{
+	public ResponseEntity<Employee> employeePost(@RequestParam(value="hours", defaultValue="0") int hours,
+																										HttpServletRequest request)
+																										throws URISyntaxException, InvalidHoursException {
+		if(hours < 0){
+			throw new InvalidHoursException();
+		}
 		Employee newEmployee = new Employee(hours);
 		repository.save(newEmployee);
-		HttpHeaders respHead = new HttpHeaders();
+		HttpHeaders respHeaders = new HttpHeaders();
 		URI resource = new URI(request.getRequestURL().toString()+newEmployee.getId());
-   	respHead.setLocation(resource);
-		return new ResponseEntity<Employee>(newEmployee, respHead, HttpStatus.CREATED);
+   	respHeaders.setLocation(resource);
+		return new ResponseEntity<Employee>(newEmployee, respHeaders, HttpStatus.CREATED);
 	}
 
 	// returns a JSON object of all employees
@@ -42,21 +47,31 @@ public class TimeoffController {
 		return new ResponseEntity<List<Employee>>(allEmployees, HttpStatus.OK);
 	}
 
-	// returns a JSON object of a specific employee
+	// returns a JSON object of a specific employee hours
 	@RequestMapping(value = "/timeoff/employees/{id}", method=RequestMethod.GET, produces={"application/json"})
-	public ResponseEntity<Employee> employeeGet(@PathVariable("id") String id) throws EmployeeNotFoundException {
+	public ResponseEntity<String> employeeGet(@PathVariable("id") String id) throws EmployeeNotFoundException {
 		Employee e = repository.findByEmployeeId(id);
 		if(e == null){
 			throw new EmployeeNotFoundException();
 		}
-		return new ResponseEntity<Employee>(e, HttpStatus.OK);
+		String returnStr = "{\n\t\"hours\": " + e.getHours() +"\n}";
+		return new ResponseEntity<String>(returnStr, HttpStatus.OK);
 	}
 
-	// deletes all employees in the database
-	@RequestMapping(value = "/timeoff/employees/", method=RequestMethod.DELETE)
-	public ResponseEntity<String> employeeDeleteAll() {
-		repository.deleteAll();
-		return new ResponseEntity<String>(HttpStatus.OK);
+	// allows a PUT to update number of hours
+	@RequestMapping(value = "/timeoff/employees/{id}", method=RequestMethod.PUT, produces={"application/json"})
+	public ResponseEntity<String> employeePut(@PathVariable("id") String id, @RequestParam(value="hours") int hours)
+																												throws EmployeeNotFoundException, InvalidHoursException {
+		if(hours < 0){
+			throw new InvalidHoursException();
+		}
+		Employee e = repository.findByEmployeeId(id);
+		if(e == null){
+			throw new EmployeeNotFoundException();
+		}
+		e.setHours(hours);
+		repository.save(e);
+		return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 	}
 
 	// deletes a specific employee in the database
@@ -67,12 +82,19 @@ public class TimeoffController {
 			throw new EmployeeNotFoundException();
 		}
 		repository.deleteById(id);
-		return new ResponseEntity<String>(HttpStatus.OK);
+		return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+	}
+
+	// deletes all employees in the database
+	@RequestMapping(value = "/timeoff/employees/", method=RequestMethod.DELETE)
+	public ResponseEntity<String> employeeDeleteAll() {
+		repository.deleteAll();
+		return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 	}
 
 	// handles POST for new PTO request
 	@RequestMapping(value = "/timeoff/requests/", method=RequestMethod.POST, produces={"application/json"})
-	public ResponseEntity<Employee> requestPost(@RequestParam(value="id") String id,
+	public ResponseEntity<Map<String, Integer>> requestPost(@RequestParam(value="id") String id,
 																					@RequestParam(value="hours", defaultValue="0") int numHours,
 																					@RequestParam(value="year") int year,
 																					@RequestParam(value="month") int month,
@@ -93,10 +115,10 @@ public class TimeoffController {
 			throw new InvalidDateException();
 		}
 
-		HttpHeaders respHead = new HttpHeaders();
+		HttpHeaders respHeaders = new HttpHeaders();
 		URI resource = new URI(request.getRequestURL().toString()+e.getId());
-   	respHead.setLocation(resource);
-		return new ResponseEntity<Employee>(e, respHead, HttpStatus.CREATED);
+   	respHeaders.setLocation(resource);
+		return new ResponseEntity<Map<String, Integer>>(e.getRequests(), respHeaders, HttpStatus.CREATED);
 	}
 
 	// returns all scheduled PTO of a specific employee
@@ -109,7 +131,7 @@ public class TimeoffController {
 		return new ResponseEntity<Map<String, Integer>>(e.getRequests(), HttpStatus.OK);
 	}
 
-	// Custom Exception definitions for handling various errors
+	// Custom Exceptions handling various errors
 
 	// handles a 404 response if a specific employee is not found
 	@ResponseStatus(value=HttpStatus.NOT_FOUND, reason="No Such Employee")
@@ -118,14 +140,20 @@ public class TimeoffController {
 	}
 
 	// handles a response if invalid date is supplied
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Invalid Date")
+	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Invalid or Past Date")
 	public class InvalidDateException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 	}
 
 	// handles a response if invalid date is supplied
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Not Enough Hours")
+	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Not Enough Hours, or Hours not between 1-24")
 	public class InvalidPTORequest extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+	}
+
+	// handles a response if supplied hours are < 0
+	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Hours < 0")
+	public class InvalidHoursException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 	}
 
