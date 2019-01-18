@@ -21,7 +21,7 @@ To run (Windows):
 gradlew.bat bootRun
 ```
 
-The API provides two endpoints:
+#### The API provides two endpoints:
 
 ##### Employees Endpoint
 
