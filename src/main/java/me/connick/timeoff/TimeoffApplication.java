@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TimeoffApplication {
 
 	public static void main(String[] args) {
+		// run the main Spring application
 		SpringApplication.run(TimeoffApplication.class, args);
 	}
-
 }

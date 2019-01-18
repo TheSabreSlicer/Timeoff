@@ -3,17 +3,17 @@ package me.connick.timeoff;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
+import static org.hamcrest.Matchers.*;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -120,7 +120,6 @@ public class TimeoffApplicationTests {
 
 		String location = mvcResult.getResponse().getHeader("Location");
 		location = location.substring(location.length()-24);
-		System.out.println(location); // TODO remove
 
 		mockMvc.perform(post("/timeoff/requests/").param("id", location).param(
 		"hours", "8").param("year", "2019").param("month", "1").param("day", "25")).andExpect(
@@ -135,7 +134,6 @@ public class TimeoffApplicationTests {
 
 		String location = mvcResult.getResponse().getHeader("Location");
 		location = location.substring(location.length()-24);
-		System.out.println(location); // TODO remove
 
 		mvcResult = mockMvc.perform(post("/timeoff/requests/").param("id", location).param(
 		"hours", "8").param("year", "2019").param("month", "1").param("day", "25")).andExpect(

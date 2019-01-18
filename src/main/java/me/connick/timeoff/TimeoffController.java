@@ -1,15 +1,14 @@
 package me.connick.timeoff;
 
 import java.util.Map;
-import java.time.DateTimeException;
 import java.util.List;
-import org.springframework.web.bind.annotation.PathVariable;
 import java.net.URISyntaxException;
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,14 +23,11 @@ public class TimeoffController {
 	@Autowired
 	private EmployeeRepository repository;
 
-	// handles POST for creating new employees
+	// handles POST for creating new employees, takes optional "hours" parameter
 	@RequestMapping(value = "/timeoff/employees/", method=RequestMethod.POST, produces={"application/json"})
 	public ResponseEntity<Employee> employeePost(@RequestParam(value="hours", defaultValue="0") int hours,
 																										HttpServletRequest request)
-																										throws URISyntaxException, InvalidHoursException {
-		if(hours < 0){
-			throw new InvalidHoursException();
-		}
+																										throws URISyntaxException {
 		Employee newEmployee = new Employee(hours);
 		repository.save(newEmployee);
 		HttpHeaders respHeaders = new HttpHeaders();
@@ -47,7 +43,7 @@ public class TimeoffController {
 		return new ResponseEntity<List<Employee>>(allEmployees, HttpStatus.OK);
 	}
 
-	// returns a JSON object of a specific employee hours
+	// returns a JSON object of a specific employee's hours
 	@RequestMapping(value = "/timeoff/employees/{id}", method=RequestMethod.GET, produces={"application/json"})
 	public ResponseEntity<String> employeeGet(@PathVariable("id") String id) throws EmployeeNotFoundException {
 		Employee e = repository.findByEmployeeId(id);
@@ -61,10 +57,7 @@ public class TimeoffController {
 	// allows a PUT to update number of hours
 	@RequestMapping(value = "/timeoff/employees/{id}", method=RequestMethod.PUT, produces={"application/json"})
 	public ResponseEntity<String> employeePut(@PathVariable("id") String id, @RequestParam(value="hours") int hours)
-																												throws EmployeeNotFoundException, InvalidHoursException {
-		if(hours < 0){
-			throw new InvalidHoursException();
-		}
+																												throws EmployeeNotFoundException {
 		Employee e = repository.findByEmployeeId(id);
 		if(e == null){
 			throw new EmployeeNotFoundException();
@@ -100,20 +93,13 @@ public class TimeoffController {
 																					@RequestParam(value="month") int month,
 																					@RequestParam(value="day") int day,
 																					HttpServletRequest request)
-																					throws URISyntaxException, InvalidDateException, InvalidPTORequest{
+																					throws URISyntaxException {
 		Employee e = repository.findByEmployeeId(id);
 		if(e == null){
 			throw new EmployeeNotFoundException();
 		}
-		try {
-			boolean isValidPTO = e.timeoffRequest(numHours, year, month, day);
-			repository.save(e);
-			if(!isValidPTO){
-				throw new InvalidPTORequest();
-			}
-		} catch(DateTimeException exception) {
-			throw new InvalidDateException();
-		}
+		e.timeoffRequest(numHours, year, month, day);
+		repository.save(e);
 
 		HttpHeaders respHeaders = new HttpHeaders();
 		URI resource = new URI(request.getRequestURL().toString()+e.getId());
@@ -131,30 +117,9 @@ public class TimeoffController {
 		return new ResponseEntity<Map<String, Integer>>(e.getRequests(), HttpStatus.OK);
 	}
 
-	// Custom Exceptions handling various errors
-
-	// handles a 404 response if a specific employee is not found
+	// handles a 404 response if a specific employee is not found in the repository
 	@ResponseStatus(value=HttpStatus.NOT_FOUND, reason="No Such Employee")
 	public class EmployeeNotFoundException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 	}
-
-	// handles a response if invalid date is supplied
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Invalid or Past Date")
-	public class InvalidDateException extends RuntimeException {
-		private static final long serialVersionUID = 1L;
-	}
-
-	// handles a response if invalid date is supplied
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Not Enough Hours, or Hours not between 1-24")
-	public class InvalidPTORequest extends RuntimeException {
-		private static final long serialVersionUID = 1L;
-	}
-
-	// handles a response if supplied hours are < 0
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Hours < 0")
-	public class InvalidHoursException extends RuntimeException {
-		private static final long serialVersionUID = 1L;
-	}
-
 }
