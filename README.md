@@ -16,7 +16,7 @@ To run (macOS):
 ```
 ./gradlew bootRun
 ```
-To run tests (Windows):
+To run (Windows):
 ```
 gradlew.bat bootRun
 ```
