@@ -54,7 +54,7 @@ public class Employee {
       throw new TooFewHoursException();
     }
     // make sure the hours requested are in the valid range
-    if(numHours < 1 | numHours > 24){
+    if(numHours < 1 || numHours > 24){
       throw new HoursRangeException();
     }
     // try converting date to string, catching errors
